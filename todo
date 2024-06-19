@@ -1,0 +1,40 @@
+============ Exam Ai  APi ==============
+
+- SETUP PROJECT
+    DONE- create venv & requirements.txt
+    DONE- install django
+    DONE- setup django 
+    DONE- setup drf installation
+    - create App and hello world view
+
+- AUTH API
+    DONE- install djoser
+    DONE- install api schema docs
+    DONE- test signup,login,logout
+
+- SETUP MODELS
+    - setup models  : Record student marks model
+    - makemigrations and migrate
+    - install pillow for imageupload in models
+
+
+- CRUD VIEWS FOR MODELS
+    - Record student marks model
+
+- CUSTOM VIEWS
+    - Exam generation 
+    - Exam correction
+
+- PERMISSIONS
+    - Admin can manage CRUD of users
+
+
+- Testing API CRUD Functionality
+    - Exam generation
+    - Exam correction
+    - Record student Marks
+
+
+
+- CONNECT TO THE UI
+    - cors headers

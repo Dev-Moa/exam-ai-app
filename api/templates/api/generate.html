@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Exam</title>
+</head>
+<body>
+    <h1>Generate Exam</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ serializer.as_p }}
+        <button type="submit">Generate Exam</button>
+    </form>
+</body>
+</html>
