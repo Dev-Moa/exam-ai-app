@@ -89,8 +89,8 @@ DJOSER = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Kulmiye edu',
-    'DESCRIPTION': 'Scholarship platform',
+    'TITLE': 'Exam Ai',
+    'DESCRIPTION': 'Automate Exams Using Ai',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
