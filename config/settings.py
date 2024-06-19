@@ -32,7 +32,7 @@ DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','exam-ai-api.up.railway.app']
 
-CSRF_TRUSTED_ORIGINS = [  # Include this if you need CSRF protection to work on this origin as well
+CSRF_TRUSTED_ORIGINS = [  
     "https://exam-ai-api.up.railway.app",
     "https://www.exam-ai-api.up.railway.app",
 ]
@@ -41,7 +41,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = (
     "http://localhost:5173",
-    "https://kulmiye-ui.up.railway.app"
+    "https://kulmiye-ui.up.railway.app",
+    "https://exam.up.railway.app"
 )
 
 # Application definition
