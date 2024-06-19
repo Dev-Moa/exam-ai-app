@@ -30,19 +30,17 @@ SECRET_KEY = env.str('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','kulmiye-api.up.railway.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','exam-ai-api.up.railway.app']
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # Include this if you need CSRF protection to work on this origin as well
-    "https://kulmiye-api.up.railway.app",
-    "https://www.kulmiye-api.up.railway.app",
+CSRF_TRUSTED_ORIGINS = [  # Include this if you need CSRF protection to work on this origin as well
+    "https://exam-ai-api.up.railway.app",
+    "https://www.exam-ai-api.up.railway.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = (
     "http://localhost:5173",
-    "http://localhost:5174",
     "https://kulmiye-ui.up.railway.app"
 )
 
