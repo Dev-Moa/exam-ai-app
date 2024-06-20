@@ -69,37 +69,40 @@ class GenerateExamAPIView(APIView):
 
             # Outputting message
             messages = list(client.beta.threads.messages.list(thread_id=thread.id, run_id=run.id))
-            message_content = messages[0].content[0].text
 
-            # return Response(
-            #     {'message': message_content},
-            #     status=status.HTTP_200_OK
-            # )
+            # check if messages is there 
+            if messages:
+                message_content = messages[0].content[0].text
+                    # Generate DOCX file
+                doc = Document()
+                doc.add_heading('Generated Exam', level=1)
+                doc.add_paragraph(message_content.value)
+                buffer = BytesIO()
+                doc.save(buffer)
+                buffer.seek(0)
+                
 
-            # Generate DOCX file
-            doc = Document()
-            doc.add_heading('Generated Exam', level=1)
-            doc.add_paragraph(message_content.value)
-            buffer = BytesIO()
-            doc.save(buffer)
-            buffer.seek(0)
-            
+                # Create an in-memory file
+                in_memory_file = InMemoryUploadedFile(
+                    buffer, None, 'generated_exam.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.tell(), None
+                )
 
-            # Create an in-memory file
-            in_memory_file = InMemoryUploadedFile(
-                buffer, None, 'generated_exam.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer.tell(), None
-            )
+                response = Response(
+                    {'message': message_content},
+                    status=status.HTTP_200_OK
+                )
+                response['Content-Disposition'] = f'attachment; filename=generated_exam.docx'
+                response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                response.content = in_memory_file.read()
 
-            response = Response(
-                {'message': message_content},
-                status=status.HTTP_200_OK
-            )
-            response['Content-Disposition'] = f'attachment; filename=generated_exam.docx'
-            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            response.content = in_memory_file.read()
-
-            return response
-
+                return response
+            else :
+                response = Response(
+                    {'message': "No message is found Out of Money"},
+                    status=status.HTTP_200_OK
+                )
+                return response
+           
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class CorrectExamAPIView(APIView):

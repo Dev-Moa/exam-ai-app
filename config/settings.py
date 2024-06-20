@@ -14,7 +14,7 @@ from pathlib import Path
 
 # environ
 import environ
-env =environ.Env()
+env = environ.Env()
 environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,11 +39,10 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = (
+CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://kulmiye-ui.up.railway.app",
     "https://exam.up.railway.app"
-)
+]
 
 # Application definition
 
@@ -63,7 +62,6 @@ INSTALLED_APPS = [
     'corsheaders',
     # local apps
     "api",
-    
 ]
 
 REST_FRAMEWORK = {
@@ -77,7 +75,6 @@ REST_FRAMEWORK = {
         # auth for HTTPS api 
         "rest_framework.authentication.TokenAuthentication"
     ],  
-    
 }
 
 DJOSER = {
@@ -99,15 +96,13 @@ SPECTACULAR_SETTINGS = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "corsheaders.middleware.CorsMiddleware", 
+    "corsheaders.middleware.CorsMiddleware",  # Add CORS middleware here
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-
 
 ROOT_URLCONF = 'config.urls'
 
@@ -140,13 +135,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #     }
 # }
 
-
-
-# RALIWAY POSTGRESQL DATABASE ( LIVE )
-
+# RAILWAY POSTGRESQL DATABASE (LIVE)
 import dj_database_url
 DATABASES = {
-    'default' : dj_database_url.parse(env.str('DATABASE_URL'))
+    'default': dj_database_url.parse(env.str('DATABASE_URL'))
 }
 
 
@@ -187,7 +179,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = [BASE_DIR / 'media']
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -202,7 +194,7 @@ AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
 # _________S3 configuration_________________
 
 AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE_BUCKET_NAME')
-DEFAULT_FILE_STORAGE ='storages.backends.s3boto3.S3Boto3Storage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 AWS_S3_FILE_OVERWRITE = False
