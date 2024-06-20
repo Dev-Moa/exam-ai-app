@@ -35,6 +35,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1','exam-ai-api.up.railway.app']
 CSRF_TRUSTED_ORIGINS = [  
     "https://exam-ai-api.up.railway.app",
     "https://www.exam-ai-api.up.railway.app",
+    "https://exam.up.railway.app",
+    "https://www.exam.up.railway.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
