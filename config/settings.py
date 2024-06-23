@@ -47,6 +47,14 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.exam.up.railway.app"
 ]
 
+# CORS Allow all headers
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # Application definition
 
 INSTALLED_APPS = [
