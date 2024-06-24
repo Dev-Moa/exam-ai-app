@@ -32,23 +32,20 @@ DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'exam-ai-api.up.railway.app','exam.up.railway.app']
 
-CSRF_TRUSTED_ORIGINS = [  
+
+CSRF_TRUSTED_ORIGINS = [
+    
+    # backend
     "https://exam-ai-api.up.railway.app",
     "https://www.exam-ai-api.up.railway.app",
+    # frontend
+    "http://localhost:5173",
+    "https://exam.up.railway.app",
+    "https://www.exam.up.railway.app",
+
 ]
 
 
-
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = ( 
-    "http://localhost:5173",
-    "https://exam.up.railway.app",
-    # "https://www.exam.up.railway.app"
-)
-
-
-CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -65,9 +62,22 @@ INSTALLED_APPS = [
     'djoser',
     'drf_spectacular',
     'django_filters',
-    'corsheaders',
+    "corsheaders",
     # local apps
     "api",
+]
+
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware", # whitenoise
+    "corsheaders.middleware.CorsMiddleware", # Add CORS middleware here
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -99,17 +109,13 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware", # whitenoise
-    "corsheaders.middleware.CorsMiddleware",  # Add CORS middleware here
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+
+CORS_ORIGIN_WHITELIST = (
+    "http://localhost:5173",
+    "https://exam.up.railway.app",
+    "https://www.exam.up.railway.app",
+
+)
 
 ROOT_URLCONF = 'config.urls'
 
@@ -240,14 +246,3 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# # ________AWS Configuration________________
-# AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
-
-# # _________S3 configuration_________________
-
-# AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE_BUCKET_NAME')
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-# AWS_S3_FILE_OVERWRITE = False
