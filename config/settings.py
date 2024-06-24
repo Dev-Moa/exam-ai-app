@@ -47,11 +47,6 @@ CORS_ALLOWED_ORIGINS = (
     # "https://www.exam.up.railway.app"
 )
 
-CORS_ALLOWED_ORIGINS = (
-    "http://localhost:5173",
-    "https://maankabe.up.railway.app"
-)
-
 
 # Application definition
 
