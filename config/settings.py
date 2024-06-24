@@ -30,30 +30,28 @@ SECRET_KEY = env.str('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','.up.railway.app']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'exam-ai-api.up.railway.app','exam.up.railway.app']
 
 CSRF_TRUSTED_ORIGINS = [  
     "https://exam-ai-api.up.railway.app",
     "https://www.exam-ai-api.up.railway.app",
-    "https://exam.up.railway.app",
-    "https://www.exam.up.railway.app"
 ]
+
+
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
+CORS_ALLOWED_ORIGINS = ( 
     "http://localhost:5173",
     "https://exam.up.railway.app",
-    "https://www.exam.up.railway.app"
-]
+    # "https://www.exam.up.railway.app"
+)
 
-# CORS Allow all headers
-CORS_ALLOW_HEADERS = [
-    'authorization',
-    'content-type',
-    'x-csrftoken',
-    'x-requested-with',
-]
+CORS_ALLOWED_ORIGINS = (
+    "http://localhost:5173",
+    "https://maankabe.up.railway.app"
+)
+
 
 # Application definition
 
@@ -119,6 +117,47 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# Import operating system library
+import os
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # Keep Django's default loggers
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            # Log to a file
+            'level': 'ERROR',  # Handle ERROR and above
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'django_errors.log'),  # Adjust the path as needed
+            'formatter': 'verbose',  # Use the verbose formatter defined above
+        },
+        'console': {
+            # Also log to console (useful for development)
+            'level': 'INFO',  # Handle INFO and above
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',  # Use the simple formatter defined above
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],  # Use both file and console handlers
+            'level': 'INFO',  # Adjust as needed
+            'propagate': True,
+        },
+        # Define additional loggers for your own apps as needed
+    },
+}
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
