@@ -34,7 +34,6 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'exam-ai-api.up.railway.app','exam.up
 
 
 CSRF_TRUSTED_ORIGINS = [
-    
     # backend
     "https://exam-ai-api.up.railway.app",
     "https://www.exam-ai-api.up.railway.app",
@@ -69,16 +68,26 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware", # Add CORS middleware here
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware", # whitenoise
-    "corsheaders.middleware.CorsMiddleware", # Add CORS middleware here
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://exam.up.railway.app",
+    "https://www.exam.up.railway.app",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -110,12 +119,6 @@ SPECTACULAR_SETTINGS = {
 }
 
 
-CORS_ORIGIN_WHITELIST = (
-    "http://localhost:5173",
-    "https://exam.up.railway.app",
-    "https://www.exam.up.railway.app",
-
-)
 
 ROOT_URLCONF = 'config.urls'
 
@@ -123,6 +126,7 @@ ROOT_URLCONF = 'config.urls'
 import os
 
 # Logging configuration
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # Keep Django's default loggers
@@ -160,6 +164,8 @@ LOGGING = {
         # Define additional loggers for your own apps as needed
     },
 }
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
