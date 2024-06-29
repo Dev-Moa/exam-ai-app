@@ -3,9 +3,15 @@ from .models import StudentReview
 from django.contrib.auth.models import User
 
 
+class VisionExamSerializer(serializers.Serializer):
+    imgs = serializers.ImageField()
+
 class CorrectExamSerializer(serializers.Serializer):
     original_file = serializers.FileField()
-    student_file = serializers.FileField()
+    student_files = serializers.ListField(
+        child=serializers.ImageField(), 
+        allow_empty=False
+    )
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)

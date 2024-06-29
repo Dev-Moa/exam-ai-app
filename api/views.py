@@ -7,7 +7,7 @@ from rest_framework import status
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from io import BytesIO
 from docx import Document
-from .serializers import GenerateExamSerializer,CorrectExamSerializer,StudentMarkSerializer,CustomUserSerializer
+from .serializers import GenerateExamSerializer,CorrectExamSerializer,VisionExamSerializer,StudentMarkSerializer,CustomUserSerializer
 from rest_framework import generics, status
 from .models import QuestionDetail, StudentReview
 from django.http import HttpResponse
@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAdminUser
 from openai import OpenAI
 import time
-from .utils import extract_details_from_string,save_review_to_db
+from .utils import extract_details_from_string,save_review_to_db,analyze_images
 
 
 # Initialize OpenAI client
@@ -105,23 +105,25 @@ class GenerateExamAPIView(APIView):
            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 class CorrectExamAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CorrectExamSerializer(data=request.data)
         if serializer.is_valid():
             original_file = serializer.validated_data['original_file']
-            student_file = serializer.validated_data['student_file']
+            student_files = serializer.validated_data['student_files']
 
-            # Ensure both files have supported extensions
-            for file in [original_file, student_file]:
-                if not file.name.endswith(('.pdf', '.txt')):
-                    return Response({'error': f'Unsupported file extension for {file.name}'}, status=status.HTTP_400_BAD_REQUEST)
+            # Ensure original file has a supported extension
+            if not original_file.name.endswith(('.pdf', '.txt')):
+                return Response({'error': f'Unsupported file extension for {original_file.name}'}, status=status.HTTP_400_BAD_REQUEST)
 
             vector_store = client.beta.vector_stores.create(name="Book and student paper vector store")
 
-            # Read the file content correctly and prepare for upload
+            # Read the original file content correctly and prepare for upload
             original_file_stream = original_file.read()
-            student_file_stream = student_file.read()
 
             # Use the upload and poll SDK helper to upload the files, add them to the vector store,
             # and poll the status of the file batch for completion.
@@ -129,40 +131,51 @@ class CorrectExamAPIView(APIView):
                 vector_store_id=vector_store.id,
                 files=[
                     (original_file.name, original_file_stream),
-                    (student_file.name, student_file_stream)
                 ]
             )
-            # attaching to thread
+
+            # Extract text from the images
+            imgs_list = []
+            for img in student_files:
+                img_stream = img.read()
+                imgs_list.append(img_stream)
+
+            student_exam_papers = analyze_images(image_streams=imgs_list)
+            print(student_exam_papers)
+
+            # Prepare the prompt for the AI assistant
             prompt = f'''
-            Please review the student exam file named {student_file.name} using the uploaded book {original_file.name} as the reference material to identify any errors. Additionally, please provide the student's final score and indicate the number of questions they answered incorrectly. Provide the answer in a structured JSON format as specified below.
+            Please review this student exam {student_exam_papers} using the uploaded book {original_file.name} as the reference material to identify any errors.
+              Additionally, please provide the student's final score, with the total marks being 100, and indicate the number of questions they answered incorrectly. 
+              Score the student's exam answers based on correctness
+              Provide the answer in a structured JSON format as specified below.
 
             Instructions:
-            1. Review the student exam file titled {student_file.name} using the uploaded book as a reference to detect errors.
+            1. Review the student exam file using the uploaded book as a reference to detect errors.
             2. Determine the student's final score and specify the number of questions they answered incorrectly.
             3. Respond in a structured manner to improve clarity. Avoid manually evaluating each question individually.
-            
+
             Response Format should be this json like format please :
             {{
             "review": {{
-                "student_name": "[Student Name]",
-                "book_name":[Book name]
+                "student_name": "[Extract Student Name from student exam text passed]",
+                "book_name": "[Book name]",
                 "results": {{
-                "final_score": [Final Score],
-                "incorrect_answers_count": [Number of Incorrect Answers],
-                "incorrect_answers_details": [
-                    {{
-                    "question_number": [Question Number],
-                    "reason": "[Reason for Incorrect Answer]",
-                    "correct_answer": "[Correct Answer]"
-                    }}
-                    // Repeat for each incorrect answer
-                ]
+                    "final_score": [Number of Correct Answers and Final Score Marks],
+                    "incorrect_answers_count": [Number of Incorrect Answers],
+                    "incorrect_answers_details": [
+                        {{
+                            "question_number": [Question Number ],
+                            "reason": "[Reason for Incorrect Answer]",
+                            "correct_answer": "[Correct Answer]"
+                        }}
+                        // Repeat for each incorrect answer
+                    ]
                 }}
             }}
             }}
-
-            please dont add intro text or outro text only the response format as response 
             '''
+
             thread = client.beta.threads.create(
                 messages=[ { "role": "user", "content": prompt} ],
                 tool_resources={
@@ -171,14 +184,15 @@ class CorrectExamAPIView(APIView):
                     }
                 }
             )
-            # run
+            # Run the assistant
             run = client.beta.threads.runs.create_and_poll(
                 thread_id=thread.id, assistant_id=assistant2
             )
+
             # Poll until the run status is completed
             while run.status != "completed":
                 time.sleep(2)  # Adding a delay to avoid rapid polling
-                run = client.beta.threads.runs.retrieve(run.id,thread_id=thread.id)
+                run = client.beta.threads.runs.retrieve(run.id, thread_id=thread.id)
 
             messages = list(client.beta.threads.messages.list(thread_id=thread.id, run_id=run.id))
             if messages:
@@ -190,23 +204,25 @@ class CorrectExamAPIView(APIView):
                     if file_citation := getattr(annotation, "file_citation", None):
                         cited_file = client.files.retrieve(file_citation.file_id)
                         citations.append(f"[{index}] {cited_file.filename}")
-                # structured response
+                
+                # Structured response
                 structured_data = extract_details_from_string(message_content.value)
-                save_review_to_db(structured_data,self.request.user)
+                save_review_to_db(structured_data, self.request.user)
                 # Extract and structure the response
                 # Return the status and file counts of the batch to see the result of this operation.
                 return Response({
                     'status': file_batch.status,
                     'file_counts': file_batch.file_counts,
-                    'response':structured_data,
+                    'response': structured_data,
                 }, status=status.HTTP_200_OK)
-            else :
+            else:
                 return Response({
                     'status': file_batch.status,
                     'file_counts': file_batch.file_counts,
-                    'response':"No response"
+                    'response': "No response"
                 }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RecordStudentMarkView(generics.ListCreateAPIView):
     serializer_class = StudentMarkSerializer
@@ -259,6 +275,21 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [IsAdminUser]
+
+
+
+class VisionAPIView(APIView):
+    def post(self,request):
+        serializer = VisionExamSerializer(data=request.data)
+        if serializer.is_valid():
+            original_file = serializer.validated_data['original_file']
+            imgs = request.FILES.getlist('imgs')
+
+            # Ensure all files have supported extensions
+            supported_extensions = ('.jpg', '.jpeg', '.png')
+            for file in  imgs:
+                if not file.name.lower().endswith(supported_extensions):
+                    return Response({'error': f'Unsupported file extension for {file.name}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

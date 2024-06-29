@@ -1,0 +1,103 @@
+class CorrectExamAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CorrectExamSerializer(data=request.data)
+        if serializer.is_valid():
+            original_file = serializer.validated_data['original_file']
+            student_file = serializer.validated_data['student_file']
+
+            # Ensure both files have supported extensions
+            for file in [original_file, student_file]:
+                if not file.name.endswith(('.pdf', '.txt')):
+                    return Response({'error': f'Unsupported file extension for {file.name}'}, status=status.HTTP_400_BAD_REQUEST)
+
+            vector_store = client.beta.vector_stores.create(name="Book and student paper vector store")
+
+            # Read the file content correctly and prepare for upload
+            original_file_stream = original_file.read()
+            student_file_stream = student_file.read()
+
+            # Use the upload and poll SDK helper to upload the files, add them to the vector store,
+            # and poll the status of the file batch for completion.
+            file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
+                vector_store_id=vector_store.id,
+                files=[
+                    (original_file.name, original_file_stream),
+                    (student_file.name, student_file_stream)
+                ]
+            )
+            # attaching to thread
+            prompt = f'''
+            Please review the student exam file named {student_file.name} using the uploaded book {original_file.name} as the reference material to identify any errors. Additionally, please provide the student's final score and indicate the number of questions they answered incorrectly. Provide the answer in a structured JSON format as specified below.
+
+            Instructions:
+            1. Review the student exam file titled {student_file.name} using the uploaded book as a reference to detect errors.
+            2. Determine the student's final score and specify the number of questions they answered incorrectly.
+            3. Respond in a structured manner to improve clarity. Avoid manually evaluating each question individually.
+            
+            Response Format should be this json like format please :
+            {{
+            "review": {{
+                "student_name": "[Student Name]",
+                "book_name":[Book name]
+                "results": {{
+                "final_score": [Final Score],
+                "incorrect_answers_count": [Number of Incorrect Answers],
+                "incorrect_answers_details": [
+                    {{
+                    "question_number": [Question Number],
+                    "section:[Section Name],
+                    "reason": "[Reason for Incorrect Answer]",
+                    "correct_answer": "[Correct Answer]"
+                    }}
+                    // Repeat for each incorrect answer
+                ]
+                }}
+            }}
+            }}
+
+            please dont add intro text or outro text only the response format as response 
+            '''
+            thread = client.beta.threads.create(
+                messages=[ { "role": "user", "content": prompt} ],
+                tool_resources={
+                    "file_search": {
+                    "vector_store_ids": [vector_store.id]
+                    }
+                }
+            )
+            # run
+            run = client.beta.threads.runs.create_and_poll(
+                thread_id=thread.id, assistant_id=assistant2
+            )
+            # Poll until the run status is completed
+            while run.status != "completed":
+                time.sleep(2)  # Adding a delay to avoid rapid polling
+                run = client.beta.threads.runs.retrieve(run.id,thread_id=thread.id)
+
+            messages = list(client.beta.threads.messages.list(thread_id=thread.id, run_id=run.id))
+            if messages:
+                message_content = messages[0].content[0].text
+                annotations = message_content.annotations
+                citations = []
+                for index, annotation in enumerate(annotations):
+                    message_content.value = message_content.value.replace(annotation.text, f"[{index}]")
+                    if file_citation := getattr(annotation, "file_citation", None):
+                        cited_file = client.files.retrieve(file_citation.file_id)
+                        citations.append(f"[{index}] {cited_file.filename}")
+                # structured response
+                structured_data = extract_details_from_string(message_content.value)
+                save_review_to_db(structured_data,self.request.user)
+                # Extract and structure the response
+                # Return the status and file counts of the batch to see the result of this operation.
+                return Response({
+                    'status': file_batch.status,
+                    'file_counts': file_batch.file_counts,
+                    'response':structured_data,
+                }, status=status.HTTP_200_OK)
+            else :
+                return Response({
+                    'status': file_batch.status,
+                    'file_counts': file_batch.file_counts,
+                    'response':"No response"
+                }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

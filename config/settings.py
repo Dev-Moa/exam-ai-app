@@ -81,9 +81,7 @@ MIDDLEWARE = [
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "https://exam.up.railway.app",
-    "https://www.exam.up.railway.app",
+    'http://localhost:5173',
 ]
 
 CORS_ALLOW_CREDENTIALS = True

@@ -1,0 +1,67 @@
+ERROR 2024-06-29 19:26:51,147 log Internal Server Error: /correct/
+Traceback (most recent call last):
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\api\views.py", line 143, in post
+    student_exam_papers = analyze_images(image_paths=imgs_list)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\api\utils.py", line 80, in analyze_images
+    base64_images = [encode_image(image_path) for image_path in image_paths]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\api\utils.py", line 80, in <listcomp>
+    base64_images = [encode_image(image_path) for image_path in image_paths]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\api\utils.py", line 76, in encode_image
+    with open(image_path, "rb") as image_file:
+         ^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+ERROR 2024-06-29 19:26:51,234 basehttp "POST /correct/ HTTP/1.1" 500 145
+ERROR 2024-06-29 19:32:16,453 log Internal Server Error: /correct/
+Traceback (most recent call last):
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\.venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dev Moha\Desktop\exam-ai\exam-api\api\views.py", line 143, in post
+    student_exam_papers = analyze_images(image_paths=imgs_list)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: analyze_images() got an unexpected keyword argument 'image_paths'
+ERROR 2024-06-29 19:32:16,468 basehttp "POST /correct/ HTTP/1.1" 500 145

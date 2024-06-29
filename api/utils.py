@@ -64,37 +64,99 @@ def save_review_to_db(response_data,user):
         )
         question_detail.save()
 
-# Define the response string
-# response = '''
-# {
-# "review": {
-# "student_name": "ali axmed",
-# "book_name":"Django for beginners",
-# "results": {
-# "final_score": 7,
-# "incorrect_answers_count": 3,
-# "incorrect_answers_details": [
-# {
-# "question_number": 2,
-# "reason": "The answer does not outline all the necessary steps for installing Django, such as creating a virtual environment and activating it.",
-# "correct_answer": "1. Ensure Python is installed.\\n2. Open a command prompt and run 'pip install django'.\\n3. Optionally, create and activate a virtual environment.\\n4. Confirm the installation by running 'django-admin --version'. ."
-# },
-# {
-# "question_number": 4,
-# "reason": "The command provided is incorrect; the correct command to start the development server is 'python manage.py runserver'.",
-# "correct_answer": "You start the development server by running 'python manage.py runserver' ."
-# },
-# {
-# "question_number": 9,
-# "reason": "Templates are not used for storing static files; they are used to define the HTML structure of web pages.",
-# "correct_answer": "Templates in Django are used to generate dynamic HTML content ."
-# }
-# ]
-# }
-# }
-# }
-# '''
-# Extract and structure the response
-# structured_data = extract_details_from_string(response)
+import base64
+import requests
 
-# print(structured_data)
+# OpenAI API Key
+api_key = "sk-proj-GmtcP1oqpnaWh0lEuuccT3BlbkFJDAqSxmdbrItZcFJGQwiP"
+
+import base64
+
+def analyze_images(image_streams):
+    def encode_image(image_stream):
+        return base64.b64encode(image_stream).decode('utf-8')
+
+    # Encode all images
+    base64_images = [encode_image(image_stream) for image_stream in image_streams]
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    # Create the content payload with multiple images
+    content = [
+        {
+            "type": "text",
+            "text": '''
+                    Please transcribe all the content from the exam paper displayed in the image. Include the student_name ,subject name , complete exam questions and the answers provided by the students. This transcription is intended for another LLM to grade the exams, so it is vital to include all essential details. Organize your response to ensure clarity and readability, covering various types of exam sections as outlined below:
+
+                    - Multiple Choice Questions:
+
+                    Present the question, the options (labeled as a, b, c, etc.), and the student's chosen answer.
+
+                    - Short Answer Questions:
+
+                    Include the question and the student's full response.
+                    
+                    - Essay Questions:
+
+                    Provide the question and the student's complete essay response.
+                    
+                    - Math Questions:
+
+                    Include the question and the student's final answer. For questions involving calculations, only state the final answer under 'Answers of Direct Math Questions.'
+                    
+                    - True/False Questions:
+
+                    State the question and the student's selected answer.
+                    
+                    - Fill-in-the-Blank Questions:
+
+                    Include the question with the blanks and the student's filled-in responses.
+                    
+                    - Matching Questions:
+
+                    List the instructions and the pairs matched by the student.
+                    
+                    - Diagram Questions:
+
+                    Include the question and describe the student's diagram or sketch in detail. If the diagram is intricate, acknowledge its presence and outline its key elements.
+                    
+                    - Complete the Following Questions:
+
+                    Include the incomplete statement, specify what the student completed, and what was originally there.
+
+                    If multiple images of the exam paper are provided, ensure that all sections and pages are transcribed. Please refrain from adding any additional introductory or concluding remarks. Structure your response logically for easy comprehension, and only transcribe the student's responses without making any corrections or alterations.
+                    
+                    '''
+        }
+    ] + [
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{base64_image}"
+            }
+        }
+        for base64_image in base64_images
+    ]
+
+    payload = {
+        "model": "gpt-4o",
+        "messages": [
+            {
+                "role": "user",
+                "content": content
+            }
+        ]
+    }
+
+    # Send the request to the OpenAI API
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+    return response.json()['choices'][0]['message']['content']
+
+# Example usage
+# image_paths = ["./exm0.jpg", "./exm1.jpg","./exm2.jpg","./exm3.jpg"]
+# response_text = analyze_images(image_paths)
+# print(response_text)
