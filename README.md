@@ -1,6 +1,6 @@
-# Exam AI — Backend
+# Exam AI: Backend
 
-AI-powered exam review API. Students submit their exam results, and the system produces a structured review: final score, incorrect answers, and the correct versions — so learners see exactly where they lost marks and why.
+AI-powered exam review API. Students submit their exam results, and the system produces a structured review: final score, incorrect answers, and the correct versions. So learners see exactly where they lost marks and why.
 
 ## Background
 
