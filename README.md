@@ -2,6 +2,10 @@
 
 AI-powered exam review API. Students submit their exam results, and the system produces a structured review: final score, incorrect answers, and the correct versions — so learners see exactly where they lost marks and why.
 
+## Background
+
+Built as my **final-year graduation project** for my B.Sc. in Computer Applications at Jamhuriya University of Science and Technology (graduated December 2024).
+
 ## How it works
 
 1. An AI model analyzes the submitted exam result
